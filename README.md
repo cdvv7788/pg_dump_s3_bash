@@ -9,4 +9,11 @@ This script takes 4 mandatory arguments:
 - s3 bucket
 - max dump count
 
-The script assumes that the given user can log to the database without password (i.e. postgres).
+The script assumes that the given user can log to the database without password (peer). Also, the user that invokes it must be a sudoer.
+The server where this command is being run must have `aws cli` configured.
+
+### Example
+
+```
+./script.sh database_name postgres s3_bucket 100
+```
