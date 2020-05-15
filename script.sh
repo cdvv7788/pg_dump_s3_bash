@@ -7,7 +7,13 @@
 
 tmp_dir=$(mktemp -d "${TMPDIR:-/tmp/}$(basename $0).XXXXXXXXXXXX")
 timestamp=$(date +%s)
-sudo -u $2 pg_dump $1 > $tmp_dir/$timestamp.sql
+if [ -z $5 ]
+then
+    sudo -u $2 pg_dump $1 > $tmp_dir/$timestamp.sql || { echo 'unable to create backup' ; exit 1; }
+else
+    pass=$(aws secretsmanager get-secret-value --secret-id="$5" | grep "SecretString" | awk -F'["]' '{print $4}')
+    PGPASSWORD="$pass" pg_dump -U $2 -w $1 > $tmp_dir/$timestamp.sql || { echo 'unable to create backup' ; exit 1; }
+fi
 aws s3 cp $tmp_dir/$timestamp.sql s3://$3/$timestamp.sql
 
 counter=1
